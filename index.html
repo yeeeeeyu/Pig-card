@@ -1,122 +1,23 @@
-<!doctype html>
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#fff1f5">
-<title>小豬幫幫我！</title>
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#fff1f5;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}
-body{display:flex;justify-content:center}
-.page{position:relative;width:min(100vw,430px);aspect-ratio:1024/1450;background:#fff1f5 url("mockup.jpg") center top/100% 100% no-repeat;overflow:hidden}
-.tap{position:absolute;border:0;background:transparent;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.tap:focus-visible{outline:3px solid rgba(235,91,135,.65);outline-offset:2px;border-radius:18px}
-.manage{left:73%;top:1.984%;width:24%;height:5.8%}
-.quick1{left:7.2%;top:46.793%;width:42%;height:7.2%}
-.quick5{left:51.1%;top:46.793%;width:42%;height:7.2%}
-.customInput{position:absolute;left:8%;top:63.371%;width:66.2%;height:5.7%;border:0;outline:0;background:transparent;font-size:clamp(14px,3.7vw,16px);font-weight:600;color:#6b3947;padding:0 14px;border-radius:18px;text-align:left}
-.customInput::placeholder{color:transparent}.customInput:focus,.customInput.hasValue{background:#fffafb}.customInput:focus::placeholder{color:#aaa}
-.useBtn{left:76.8%;top:63.371%;width:16.2%;height:5.7%}
-.addBtn{left:6.8%;top:72.428%;width:43%;height:5.9%}
-.undoBtn{left:51.1%;top:72.428%;width:43%;height:5.9%}
-/* Cover only the static $0 in the reference image so the real balance can update. */
-.balanceCover{display:none}
-.balance{position:absolute;left:9.5%;top:19.145%;width:28%;font-size:clamp(42px,11vw,58px);line-height:1;font-weight:950;color:#fff;text-shadow:0 3px 0 rgba(185,78,109,.18);z-index:3;white-space:nowrap}
-.levelDynamic{position:absolute;left:18.2%;top:85.881%;width:27%;z-index:3;color:#6b3947;text-align:left;pointer-events:none}
-.levelDynamic .name{font-size:clamp(14px,3.7vw,17px);font-weight:900;line-height:1.15;white-space:nowrap}
-.levelDynamic .range{font-size:clamp(10px,2.7vw,12px);margin-top:3px;color:#8f5d6b;white-space:nowrap}
-.encDynamic{position:absolute;left:57.8%;top:86.093%;width:30%;z-index:3;color:#6b3947;pointer-events:none;font-size:clamp(11px,2.8vw,13px);line-height:1.35;font-weight:700}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(15px);background:#593d45;color:#fff;padding:11px 16px;border-radius:14px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.modal{display:none;position:fixed;inset:0;background:rgba(107,57,71,.32);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;padding:14px;z-index:60}
-.modal.show{display:flex}
-.sheet{width:min(430px,100%);background:linear-gradient(#fffafb,#fff);border:2px solid #f8dce5;border-radius:30px;padding:22px;box-shadow:0 -10px 35px rgba(62,40,53,.15)}
-.sheet h2{margin:4px 0 6px;color:#6b3947}.sheet p{margin:0 0 14px;color:#9b6573;font-size:13px}
-.input{width:100%;padding:14px;border:2px solid #f0d5de;border-radius:17px;font-size:18px;outline:0;background:#fffafb}
-.confirm,.cancel{width:100%;border:0;border-radius:16px;padding:14px;font-size:16px;font-weight:900;margin-top:10px}.confirm{background:#ff6f98;color:#fff}.cancel{background:#f7eef1;color:#593d45}
-@media(min-width:700px){body{padding:20px 0}.page{box-shadow:0 20px 60px rgba(150,80,100,.12);border-radius:28px}}
-</style>
-</head>
-<body>
-<div class="page" id="page" aria-label="小豬幫幫我">
-  <button class="tap manage" id="manage" aria-label="豬豬管理" type="button"></button>
-  <button class="tap quick1" id="quick1" aria-label="使用1枚印章" type="button"></button>
-  <button class="tap quick5" id="quick5" aria-label="使用5枚印章" type="button"></button>
-  <input id="publicSpend" class="customInput" type="number" min="1" step="1" inputmode="numeric" placeholder="輸入要使用幾枚印章" aria-label="輸入要使用幾枚印章">
-  <button class="tap useBtn" id="useBtn" aria-label="使用印章" type="button"></button>
-  <button class="tap addBtn" id="addBtn" aria-label="補充印章" type="button"></button>
-  <button class="tap undoBtn" id="undoBtn" aria-label="取消上一個" type="button"></button>
-
-  <div class="balanceCover" aria-hidden="true"></div>
-  <div class="balance" id="balance" aria-live="polite">850</div>
-  <div class="levelDynamic" aria-live="polite"><div class="name" id="levelName">🐣 小乖豬</div><div class="range" id="levelRange">0 - 9 枚</div></div>
-  <div class="encDynamic" id="encouragement" aria-live="polite">大豬今天也很乖！<br>繼續保持喔～</div>
-</div>
-<div class="toast" id="toast" role="status"></div>
-<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
-  <div class="sheet">
-    <h2 id="mt">🔐 豬豬管理</h2>
-    <p id="mp">請輸入管理密碼</p>
-    <input id="modalInput" class="input" type="password" placeholder="輸入密碼" autocomplete="off">
-    <button class="confirm" id="confirm" type="button">確認</button>
-    <button class="cancel" id="cancel" type="button">取消</button>
-  </div>
-</div>
-<script>
-(function(){
-  const card=new URLSearchParams(location.search).get('card')||'001';
-  const key='pig_'+card;
-  const ADMIN_PIN='smallpig0926';
-  const encouragements=['🐷 大豬今天也很乖！','💕 大豬乖乖，繼續保持！','🎀 這枚印章是給乖乖的大豬！','✨ 大豬表現得很好喔！','🐽 乖豬豬認證成功！','💗 大豬又完成一件乖乖的事了！'];
-  let data;
-  try{data=JSON.parse(localStorage.getItem(key)||'null')}catch(e){data=null}
-  if(!data || typeof data.balance!=='number') data={name:'大豬',balance:850,history:[]};
-  if(!Array.isArray(data.history)) data.history=[];
-  let mode='pin',moneyMode='add';
-
-  const $=id=>document.getElementById(id);
-  function save(){localStorage.setItem(key,JSON.stringify(data));render()}
-  function level(n){if(n>=100)return ['💖 最最乖大豬','100+ 枚'];if(n>=50)return ['👑 無敵乖豬','50 - 99 枚'];if(n>=30)return ['🎀 超級乖豬','30 - 49 枚'];if(n>=10)return ['🐷 乖豬豬','10 - 29 枚'];return ['🐣 小乖豬','0 - 9 枚']}
-  function render(){
-    const n=Math.max(0,Math.floor(Number(data.balance)||0));
-    $('balance').textContent=n.toLocaleString('zh-TW');
-    const lv=level(n); $('levelName').textContent=lv[0]; $('levelRange').textContent=lv[1];
-  }
-  function toast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>e.classList.remove('show'),1600)}
-  function spend(n){n=Math.floor(Number(n));if(!Number.isFinite(n)||n<1)return;if(n>data.balance)return toast('乖豬豬印章不夠喔 🐷');data.history.push(data.balance);data.balance-=n;save();$('encouragement').innerHTML=encouragements[Math.floor(Math.random()*encouragements.length)];toast('已使用 '+n+' 枚印章 🐷')}
-  function publicSpend(){const e=$('publicSpend');const n=Math.floor(Number(e.value));if(!Number.isFinite(n)||n<1)return toast('請輸入要使用的印章數');spend(n);if(n<=data.balance+n){e.value='';e.classList.remove('hasValue')}}
-  function undo(){if(!data.history.length)return toast('目前沒有可以取消的操作');data.balance=data.history.pop();save();toast('已取消上一個操作 ↩️')}
-  function openPin(){mode='pin';$('mt').textContent='🔐 豬豬管理';$('mp').textContent='請輸入管理密碼';const i=$('modalInput');i.style.display='block';i.type='password';i.value='';i.placeholder='輸入密碼';$('confirm').textContent='確認';$('cancel').textContent='取消';delete $('cancel').dataset.admin;$('modal').classList.add('show');setTimeout(()=>i.focus(),80)}
-  function openMoney(m){moneyMode=m;mode='money';$('modalInput').style.display='block';$('confirm').textContent='確認';$('cancel').textContent='取消';delete $('cancel').dataset.admin;$('mt').textContent=m==='add'?'💗 補充印章':'🐾 使用印章';$('mp').textContent=m==='add'?'輸入要補充的印章數':'輸入要使用的印章數';const i=$('modalInput');i.type='number';i.inputMode='numeric';i.value='';i.placeholder=m==='add'?'輸入要補充幾枚印章':'輸入要使用幾枚印章';$('modal').classList.add('show');setTimeout(()=>i.focus(),80)}
-  function closeModal(){$('modal').classList.remove('show')}
-  function confirmModal(){
-    const i=$('modalInput');
-    if(mode==='admin'){openMoney('add');return;}
-    if(mode==='pin'){
-      if(i.value===ADMIN_PIN){mode='admin'; $('mt').textContent='🐷 豬豬管理'; $('mp').textContent='選擇要進行的操作'; i.style.display='none'; $('confirm').textContent='💗 補充印章'; $('cancel').textContent='🐾 使用印章'; $('cancel').dataset.admin='1'; toast('管理驗證成功 🔓')}
-      else toast('密碼錯誤，再試一次');
-      return;
-    }
-    const n=Math.floor(Number(i.value));
-    if(!Number.isFinite(n)||n<1)return toast('請輸入正確數量');
-    if(moneyMode==='spend'&&n>data.balance)return toast('乖豬豬印章不夠喔 🐷');
-    data.history.push(data.balance);data.balance += moneyMode==='add'?n:-n;save();closeModal();toast(moneyMode==='add'?'印章補充成功 💗':'印章使用成功 🐷');
-  }
-  $('manage').addEventListener('click',openPin);
-  $('quick1').addEventListener('click',()=>spend(1));
-  $('quick5').addEventListener('click',()=>spend(5));
-  $('useBtn').addEventListener('click',publicSpend);
-  $('publicSpend').addEventListener('input',e=>e.currentTarget.classList.toggle('hasValue',!!e.currentTarget.value));
-  $('publicSpend').addEventListener('keydown',e=>{if(e.key==='Enter')publicSpend()});
-  $('addBtn').addEventListener('click',()=>openPin());
-  $('undoBtn').addEventListener('click',undo);
-  $('confirm').addEventListener('click',confirmModal);
-  $('cancel').addEventListener('click',()=>{if($('cancel').dataset.admin==='1'){openMoney('spend')}else closeModal()});
-  $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
-  $('modalInput').addEventListener('keydown',e=>{if(e.key==='Enter')confirmModal();if(e.key==='Escape')closeModal()});
-  render();
-})();
-</script>
-</body>
-</html>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fff5f7"><title>小豬幫幫我！</title><style>
+*{box-sizing:border-box}html,body{margin:0;background:#fff5f7;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif;color:#6e2639}body{display:flex;justify-content:center}.page{position:relative;width:min(100vw,430px);aspect-ratio:2/3;background:url('mockup.png') center/100% 100% no-repeat;overflow:hidden}.tap{position:absolute;border:0;background:transparent;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}.tap:focus-visible{outline:3px solid #ff7da4;border-radius:16px}.manage{left:74%;top:2.7%;width:22%;height:5.5%}.q1{left:5.7%;top:43.1%;width:31.5%;height:11.6%}.q5{left:38.8%;top:43.1%;width:27.8%;height:11.6%}.q20{left:67.3%;top:43.1%;width:28%;height:11.6%}.custom{position:absolute;left:7.5%;top:61.1%;width:67%;height:5.3%;border:0;outline:0;background:#fffdfd;border-radius:22px;padding:0 14px;font-size:clamp(14px,3.8vw,17px);color:#6e2639;box-shadow:inset 0 0 0 1px #efb7c8}.custom::placeholder{color:#aaa}.use{left:76%;top:61.1%;width:17%;height:5.3%}.add{left:5%;top:69.1%;width:31%;height:5.6%}.undo{left:37.3%;top:69.1%;width:32%;height:5.6%}.historyBtn{left:70.5%;top:69.1%;width:25%;height:5.6%}.balancePatch{position:absolute;left:8.3%;top:17.5%;width:22%;height:9.5%;background:linear-gradient(145deg,#ffb5c7,#ffa0ba);border-radius:18px}.balance{position:absolute;left:9.3%;top:18.1%;font-size:clamp(54px,16vw,78px);font-weight:950;color:white;line-height:1;text-shadow:0 3px 0 #dc7693;white-space:nowrap}.levelPatch,.encPatch{position:absolute;background:#fffdfd;border:1px solid #f6c8d5;border-radius:17px}.levelPatch{left:7.4%;top:79.8%;width:40%;height:6.4%}.encPatch{left:54%;top:79.8%;width:38%;height:6.4%}.level{position:absolute;left:17.5%;top:80.6%;width:28%;font-weight:900}.level .n{font-size:clamp(14px,4vw,18px);white-space:nowrap}.level .r{font-size:clamp(10px,2.8vw,12px);margin-top:4px;color:#98586b}.enc{position:absolute;left:57.5%;top:80.7%;width:31%;font-size:clamp(10px,2.8vw,13px);line-height:1.35;font-weight:700}.modal{display:none;position:fixed;inset:0;background:#6b39475c;backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;padding:14px;z-index:20}.modal.show{display:flex}.sheet{width:min(430px,100%);max-height:76vh;overflow:auto;background:#fffafb;border:2px solid #f5d0dc;border-radius:28px;padding:20px;box-shadow:0 -10px 35px #50303b2b}.sheet h2{margin:2px 0 6px}.sheet p{margin:0 0 12px;color:#9b6573;font-size:13px}.input{width:100%;padding:14px;border:2px solid #efd0da;border-radius:16px;font-size:17px;background:white;outline:0}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}.btn{border:0;border-radius:15px;padding:13px;font-size:15px;font-weight:900}.pink{background:#ff739b;color:white}.soft{background:#f7e9ee;color:#6e2639}.orange{background:#fff0d9;color:#a85d00}.record{display:flex;justify-content:space-between;gap:10px;padding:11px 4px;border-bottom:1px solid #f2dce3}.record .plus{color:#d84f79}.record .minus{color:#7c5fd3}.record small{display:block;color:#aa7b89;margin-top:2px}.empty{text-align:center;color:#a98590;padding:28px 0}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(12px);background:#593d45;color:#fff;padding:10px 15px;border-radius:14px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:30}.toast.show{opacity:1;transform:translateX(-50%)}
+</style></head><body><main class="page">
+<button class="tap manage" id="manage" aria-label="豬豬管理"></button><button class="tap q1" id="q1" aria-label="小抱抱，使用1枚"></button><button class="tap q5" id="q5" aria-label="小豬請大豬吃一次，使用5枚"></button><button class="tap q20" id="q20" aria-label="大豬一個小願望，使用20枚"></button>
+<input class="custom" id="custom" type="number" min="1" inputmode="numeric" placeholder="輸入要使用幾枚印章"><button class="tap use" id="use" aria-label="使用"></button><button class="tap add" id="add" aria-label="補充印章"></button><button class="tap undo" id="undo" aria-label="取消上一個"></button><button class="tap historyBtn" id="historyBtn" aria-label="查看紀錄"></button>
+<div class="balancePatch"></div><div class="balance" id="balance">10</div><div class="levelPatch"></div><div class="encPatch"></div><div class="level"><div class="n" id="levelName">🐣 大乖豬</div><div class="r" id="levelRange">0 - 9 枚</div></div><div class="enc" id="enc">小豬覺得大豬今天也很乖！<br>繼續保持喔～</div>
+</main><div class="toast" id="toast"></div>
+<div class="modal" id="modal"><section class="sheet"><h2 id="mt">🔐 豬豬管理</h2><p id="mp">請輸入管理密碼</p><input class="input" id="mi" type="password" placeholder="輸入密碼"><div class="actions"><button class="btn pink" id="ok">確認</button><button class="btn soft" id="cancel">取消</button></div></section></div>
+<div class="modal" id="historyModal"><section class="sheet"><h2>📋 印章紀錄</h2><p>補充與使用都會記錄在這支手機。</p><div id="records"></div><button class="btn soft" style="width:100%;margin-top:12px" id="closeHistory">關閉</button></section></div>
+<script>(function(){
+const card=new URLSearchParams(location.search).get('card')||'001',key='pig_'+card,PIN='smallpig0926';const $=id=>document.getElementById(id);let d;try{d=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}if(!d||typeof d.balance!=='number')d={balance:10,transactions:[]};if(!Array.isArray(d.transactions))d.transactions=[];let mode='pin',moneyMode='add';const encouragements=['🐷 小豬覺得大豬今天也很乖！','💕 小豬幫大豬加油，繼續保持！','🎀 小豬認證：今天的大豬很乖！','✨ 小豬覺得大豬表現得很好喔！','💗 小豬最喜歡乖乖的大豬了！'];
+function lv(n){if(n>=100)return['💖 最最乖大豬','100+ 枚'];if(n>=50)return['👑 無敵乖豬','50 - 99 枚'];if(n>=30)return['🎀 超級乖豬','30 - 49 枚'];if(n>=10)return['🐷 乖豬豬','10 - 29 枚'];return['🐣 大乖豬','0 - 9 枚']}
+function render(){const n=Math.max(0,Math.floor(d.balance));$('balance').textContent=n;const l=lv(n);$('levelName').textContent=l[0];$('levelRange').textContent=l[1]}
+function save(){localStorage.setItem(key,JSON.stringify(d));render()}function toast(s){$('toast').textContent=s;$('toast').classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>$('toast').classList.remove('show'),1500)}
+function log(delta,label,undoOf){d.transactions.push({delta,label,time:new Date().toISOString(),undoOf:undoOf||null});if(d.transactions.length>200)d.transactions=d.transactions.slice(-200)}
+function monthCount(){const now=new Date();return d.transactions.filter(x=>x.delta<=-5&&!x.undoOf&&(()=>{const t=new Date(x.time);return t.getFullYear()===now.getFullYear()&&t.getMonth()===now.getMonth()})()).length}
+function spend(n,label){n=Math.floor(Number(n));if(!n||n<1)return;if(n>d.balance)return toast('乖豬豬印章不夠喔 🐷');if(n>=5&&monthCount()>=2)return toast('本月 5 枚以上的獎勵已兌換 2 次囉 🐷');d.balance-=n;log(-n,label);save();$('enc').innerHTML=encouragements[Math.floor(Math.random()*encouragements.length)];toast('已使用 '+n+' 枚印章 🐷')}
+function undo(){const last=[...d.transactions].reverse().find(x=>!x.undoOf);if(!last)return toast('目前沒有可以取消的操作');d.balance-=last.delta;log(-last.delta,'取消：'+last.label,last.time);save();toast('已取消上一個操作 ↩️')}
+function openPin(){mode='pin';$('mt').textContent='🔐 豬豬管理';$('mp').textContent='請輸入管理密碼';$('mi').style.display='block';$('mi').type='password';$('mi').value='';$('mi').placeholder='輸入密碼';$('ok').textContent='確認';$('cancel').textContent='取消';delete $('cancel').dataset.admin;$('modal').classList.add('show')}
+function openMoney(m){mode='money';moneyMode=m;$('mt').textContent=m==='add'?'💗 補充印章':'🐾 管理員使用印章';$('mp').textContent=m==='add'?'輸入要補充幾枚印章':'輸入要使用幾枚印章';$('mi').style.display='block';$('mi').type='number';$('mi').value='';$('mi').placeholder=m==='add'?'輸入要補充幾枚印章':'輸入要使用幾枚印章';$('ok').textContent='確認';$('cancel').textContent='取消';delete $('cancel').dataset.admin}
+function confirm(){if(mode==='pin'){if($('mi').value!==PIN)return toast('密碼錯誤，再試一次');mode='admin';$('mt').textContent='🐷 豬豬管理';$('mp').textContent='選擇要進行的操作';$('mi').style.display='none';$('ok').textContent='💗 補充印章';$('cancel').textContent='🐾 使用印章';$('cancel').dataset.admin='1';return}if(mode==='admin')return openMoney('add');const n=Math.floor(Number($('mi').value));if(!n||n<1)return toast('請輸入正確數量');if(moneyMode==='spend'){if(n>d.balance)return toast('印章不夠喔');d.balance-=n;log(-n,'管理員使用')}else{d.balance+=n;log(n,'管理員補充')}save();$('modal').classList.remove('show');toast('完成 💗')}
+function showHistory(){const a=[...d.transactions].reverse();$('records').innerHTML=a.length?a.map(x=>{const t=new Date(x.time),sign=x.delta>0?'+':'',cls=x.delta>0?'plus':'minus';return `<div class="record"><div><b>${x.label}</b><small>${t.toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</small></div><strong class="${cls}">${sign}${x.delta} 枚</strong></div>`}).join(''):'<div class="empty">目前還沒有紀錄 🐷</div>';$('historyModal').classList.add('show')}
+$('manage').onclick=openPin;$('add').onclick=openPin;$('q1').onclick=()=>spend(1,'小抱抱／生活小幫忙');$('q5').onclick=()=>spend(5,'小豬請大豬吃一次／幫忙吃大豬愛的');$('q20').onclick=()=>spend(20,'大豬一個小願望');$('use').onclick=()=>{const n=Math.floor(Number($('custom').value));if(!n||n<1)return toast('請輸入要使用幾枚');spend(n,'自訂使用');$('custom').value=''};$('undo').onclick=undo;$('historyBtn').onclick=showHistory;$('closeHistory').onclick=()=>$('historyModal').classList.remove('show');$('ok').onclick=confirm;$('cancel').onclick=()=>{if($('cancel').dataset.admin==='1')openMoney('spend');else $('modal').classList.remove('show')};render();})();</script></body></html>
