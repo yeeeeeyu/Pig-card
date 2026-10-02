@@ -15,18 +15,18 @@ body{display:flex;justify-content:center}
 .manage{left:73%;top:6.3%;width:24%;height:5.8%}
 .quick1{left:7.2%;top:48.6%;width:42%;height:7.2%}
 .quick5{left:51.1%;top:48.6%;width:42%;height:7.2%}
-.customInput{position:absolute;left:8%;top:64.25%;width:66.2%;height:5.7%;border:0;outline:0;background:rgba(255,255,255,.72);font-size:clamp(14px,4vw,17px);font-weight:600;color:#6b3947;padding:0 14px;border-radius:18px;text-align:left}
+.customInput{position:absolute;left:8%;top:64.25%;width:66.2%;height:5.7%;border:0;outline:0;background:#fffafb;font-size:clamp(14px,4vw,17px);font-weight:600;color:#6b3947;padding:0 14px;border-radius:18px;text-align:left}
 .customInput::placeholder{color:#aaa;opacity:1}
 .useBtn{left:76.8%;top:64.25%;width:16.2%;height:5.7%}
 .addBtn{left:6.8%;top:72.8%;width:43%;height:5.9%}
 .undoBtn{left:51.1%;top:72.8%;width:43%;height:5.9%}
 /* Cover only the static $0 in the reference image so the real balance can update. */
-.balanceCover{position:absolute;left:7%;top:21.5%;width:30%;height:10%;background:linear-gradient(145deg,#ffb6c8,#ff9eb8);border-radius:12px;z-index:2}
-.balance{position:absolute;left:9.5%;top:22%;width:28%;font-size:clamp(42px,11vw,58px);line-height:1;font-weight:950;color:#fff;text-shadow:0 3px 0 rgba(185,78,109,.18);z-index:3;white-space:nowrap}
-.levelDynamic{position:absolute;left:17.8%;top:85.4%;width:28%;z-index:3;color:#6b3947;text-align:left;pointer-events:none}
+.balanceCover{display:none}
+.balance{position:absolute;left:9.5%;top:22.5%;width:28%;font-size:clamp(42px,11vw,58px);line-height:1;font-weight:950;color:#fff;text-shadow:0 3px 0 rgba(185,78,109,.18);z-index:3;white-space:nowrap}
+.levelDynamic{position:absolute;left:18%;top:85.1%;width:27%;z-index:3;color:#6b3947;text-align:left;pointer-events:none}
 .levelDynamic .name{font-size:clamp(16px,4.2vw,20px);font-weight:900;line-height:1.2}
 .levelDynamic .range{font-size:clamp(11px,3vw,14px);margin-top:5px;color:#8f5d6b}
-.encDynamic{position:absolute;left:58%;top:85.8%;width:34%;z-index:3;color:#6b3947;pointer-events:none;font-size:clamp(12px,3.1vw,15px);line-height:1.45;font-weight:700}
+.encDynamic{position:absolute;left:57.5%;top:85.5%;width:31%;z-index:3;color:#6b3947;pointer-events:none;font-size:clamp(12px,3.1vw,15px);line-height:1.45;font-weight:700}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(15px);background:#593d45;color:#fff;padding:11px 16px;border-radius:14px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .modal{display:none;position:fixed;inset:0;background:rgba(107,57,71,.32);backdrop-filter:blur(5px);align-items:flex-end;justify-content:center;padding:14px;z-index:60}
@@ -87,13 +87,14 @@ body{display:flex;justify-content:center}
   function spend(n){n=Math.floor(Number(n));if(!Number.isFinite(n)||n<1)return;if(n>data.balance)return toast('乖豬豬印章不夠喔 🐷');data.history.push(data.balance);data.balance-=n;save();$('encouragement').innerHTML=encouragements[Math.floor(Math.random()*encouragements.length)];toast('已使用 '+n+' 枚印章 🐷')}
   function publicSpend(){const e=$('publicSpend');const n=Math.floor(Number(e.value));if(!Number.isFinite(n)||n<1)return toast('請輸入要使用的印章數');spend(n);if(n<=data.balance+n)e.value=''}
   function undo(){if(!data.history.length)return toast('目前沒有可以取消的操作');data.balance=data.history.pop();save();toast('已取消上一個操作 ↩️')}
-  function openPin(){mode='pin';$('mt').textContent='🔐 豬豬管理';$('mp').textContent='請輸入管理密碼';const i=$('modalInput');i.type='password';i.value='';i.placeholder='輸入密碼';$('modal').classList.add('show');setTimeout(()=>i.focus(),80)}
-  function openMoney(m){moneyMode=m;mode='money';$('mt').textContent=m==='add'?'💗 補充印章':'🐾 使用印章';$('mp').textContent=m==='add'?'輸入要補充的印章數':'輸入要使用的印章數';const i=$('modalInput');i.type='number';i.inputMode='numeric';i.value='';i.placeholder=m==='add'?'輸入要補充幾枚印章':'輸入要使用幾枚印章';$('modal').classList.add('show');setTimeout(()=>i.focus(),80)}
+  function openPin(){mode='pin';$('mt').textContent='🔐 豬豬管理';$('mp').textContent='請輸入管理密碼';const i=$('modalInput');i.style.display='block';i.type='password';i.value='';i.placeholder='輸入密碼';$('confirm').textContent='確認';$('cancel').textContent='取消';delete $('cancel').dataset.admin;$('modal').classList.add('show');setTimeout(()=>i.focus(),80)}
+  function openMoney(m){moneyMode=m;mode='money';$('modalInput').style.display='block';$('confirm').textContent='確認';$('cancel').textContent='取消';delete $('cancel').dataset.admin;$('mt').textContent=m==='add'?'💗 補充印章':'🐾 使用印章';$('mp').textContent=m==='add'?'輸入要補充的印章數':'輸入要使用的印章數';const i=$('modalInput');i.type='number';i.inputMode='numeric';i.value='';i.placeholder=m==='add'?'輸入要補充幾枚印章':'輸入要使用幾枚印章';$('modal').classList.add('show');setTimeout(()=>i.focus(),80)}
   function closeModal(){$('modal').classList.remove('show')}
   function confirmModal(){
     const i=$('modalInput');
+    if(mode==='admin'){openMoney('add');return;}
     if(mode==='pin'){
-      if(i.value===ADMIN_PIN){closeModal();toast('管理驗證成功 🔓');openMoney('add')}
+      if(i.value===ADMIN_PIN){mode='admin'; $('mt').textContent='🐷 豬豬管理'; $('mp').textContent='選擇要進行的操作'; i.style.display='none'; $('confirm').textContent='💗 補充印章'; $('cancel').textContent='🐾 使用印章'; $('cancel').dataset.admin='1'; toast('管理驗證成功 🔓')}
       else toast('密碼錯誤，再試一次');
       return;
     }
@@ -110,7 +111,7 @@ body{display:flex;justify-content:center}
   $('addBtn').addEventListener('click',()=>openPin());
   $('undoBtn').addEventListener('click',undo);
   $('confirm').addEventListener('click',confirmModal);
-  $('cancel').addEventListener('click',closeModal);
+  $('cancel').addEventListener('click',()=>{if($('cancel').dataset.admin==='1'){openMoney('spend')}else closeModal()});
   $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
   $('modalInput').addEventListener('keydown',e=>{if(e.key==='Enter')confirmModal();if(e.key==='Escape')closeModal()});
   render();
